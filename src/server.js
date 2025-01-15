@@ -25,7 +25,7 @@ export const startServer = () => {
   app.get('/students/:studentId', async (req, res) => {
     const { studentId } = req.params;
 
-    const student = getStudentById(studentId);
+    const student = await getStudentById(studentId);
 
     if (!student) {
       return res.status(404).json({
