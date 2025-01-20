@@ -3,7 +3,8 @@ import pino from 'pino-http';
 import cors from 'cors';
 import { getEnv } from './utils/getEnv.js';
 import { ENV_VARS } from './constants/env.js';
-import { getStudentById, getStudents } from './db/services/students.js';
+import router from './routes/index.js';
+import { errorHandlerMiddleware } from './middlewares/errorHandler.js';
 
 export const startServer = () => {
   const app = express();
@@ -16,26 +17,9 @@ export const startServer = () => {
     }),
   );
 
-  app.get('/students', async (req, res) => {
-    const students = await getStudents();
+  app.use(router);
 
-    res.json(students);
-  });
-
-  app.get('/students/:studentId', async (req, res) => {
-    const { studentId } = req.params;
-
-    const student = await getStudentById(studentId);
-
-    if (!student) {
-      return res.status(404).json({
-        status: 404,
-        message: `Student with id ${studentId} not found`,
-      });
-    }
-
-    res.json(student);
-  });
+  app.use(errorHandlerMiddleware);
 
   const PORT = getEnv(ENV_VARS.PORT);
   app.listen(PORT, () => {
