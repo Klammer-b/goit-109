@@ -1,5 +1,6 @@
 import createHttpError from 'http-errors';
-import { StudentCollection } from '../models/students.js';
+import { StudentCollection } from '../db/models/students.js';
+import { processStudentPayload } from '../utils/processPayload.js';
 
 export const getStudents = async () => {
   const students = await StudentCollection.find();
@@ -18,7 +19,9 @@ export const getStudentById = async (studentId) => {
 };
 
 export const createStudent = async (payload) => {
-  const student = await StudentCollection.create(payload);
+  const student = await StudentCollection.create(
+    processStudentPayload(payload),
+  );
 
   return student;
 };
@@ -26,7 +29,7 @@ export const createStudent = async (payload) => {
 export const upsertStudent = async (studentId, payload, options = {}) => {
   const response = await StudentCollection.findByIdAndUpdate(
     studentId,
-    payload,
+    processStudentPayload(payload),
     { ...options, new: true, includeResultMetadata: true },
   );
 

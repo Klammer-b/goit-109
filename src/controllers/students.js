@@ -4,7 +4,7 @@ import {
   getStudentById,
   getStudents,
   upsertStudent,
-} from '../db/services/students.js';
+} from '../services/students.js';
 
 export const getStudentsController = async (req, res) => {
   const students = await getStudents();
