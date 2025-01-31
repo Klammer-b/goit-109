@@ -5,14 +5,26 @@ import {
   getStudents,
   upsertStudent,
 } from '../services/students.js';
+import { parseFilters } from '../utils/parseFilters.js';
+import { parsePaginationParams } from '../utils/parsePaginationParams.js';
+import { parseSortParams } from '../utils/parseSortParams.js';
 
 export const getStudentsController = async (req, res) => {
-  const students = await getStudents();
+  const { page, perPage } = parsePaginationParams(req.query);
+  const { sortOrder, sortBy } = parseSortParams(req.query);
+  const filter = parseFilters(req.query.filter);
+  const studentsWithPaginationMetadata = await getStudents({
+    page,
+    perPage,
+    sortOrder,
+    sortBy,
+    filter,
+  });
 
   res.json({
     status: 200,
     message: 'Students were found!',
-    data: students,
+    data: studentsWithPaginationMetadata,
   });
 };
 

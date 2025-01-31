@@ -2,10 +2,76 @@ import createHttpError from 'http-errors';
 import { StudentCollection } from '../db/models/students.js';
 import { processStudentPayload } from '../utils/processPayload.js';
 
-export const getStudents = async () => {
-  const students = await StudentCollection.find();
+const createPaginationMetadata = (page, perPage, count) => {
+  const totalPages = Math.ceil(count / perPage);
+  const hasNextPage = count > page * perPage;
+  const hasPreviousPage = page !== 1 && page <= totalPages + 1;
 
-  return students;
+  return {
+    page,
+    perPage,
+    totalItems: count,
+    totalPages,
+    hasNextPage,
+    hasPreviousPage,
+  };
+};
+
+export const getStudents = async ({
+  page,
+  perPage,
+  sortBy,
+  sortOrder,
+  filter,
+}) => {
+  const offset = (page - 1) * perPage;
+  const filtersQuery = StudentCollection.find();
+
+  if (filter.minAge) {
+    filtersQuery.where('age').gte(filter.minAge);
+  }
+
+  if (filter.maxAge) {
+    filtersQuery.where('age').lte(filter.maxAge);
+  }
+
+  if (filter.minAvgMark) {
+    filtersQuery.where('avgMark').gte(filter.minAvgMark);
+  }
+
+  if (filter.maxAvgMark) {
+    filtersQuery.where('avgMark').lte(filter.maxAvgMark);
+  }
+
+  if (filter.gender) {
+    filtersQuery.where('gender').equals(filter.gender);
+  }
+
+  if (filter.onDuty || filter.onDuty === false) {
+    filtersQuery.where('onDuty').equals(filter.onDuty);
+  }
+
+  const studentsQuery = StudentCollection.find()
+    .merge(filtersQuery)
+    .skip(offset)
+    .limit(perPage)
+    .sort({ [sortBy]: sortOrder });
+  const studentsCountQuery = StudentCollection.find()
+    .merge(studentsQuery)
+    .countDocuments();
+
+  const [students, studentsCount] = await Promise.all([
+    studentsQuery,
+    studentsCountQuery,
+  ]);
+
+  const paginationMetadata = createPaginationMetadata(
+    page,
+    perPage,
+    studentsCount,
+  );
+
+  return { items: students, ...paginationMetadata };
 };
 
 export const getStudentById = async (studentId) => {
