@@ -1,5 +1,21 @@
-import { loginUser, logoutUser, registerUser } from '../services/users.js';
+import {
+  loginUser,
+  logoutUser,
+  refreshSession,
+  registerUser,
+} from '../services/auth.js';
 import { serializeUser } from '../utils/serializeUser.js';
+
+const setupSessionCookies = (session, res) => {
+  res.cookie('sessionToken', session.refreshToken, {
+    httpOnly: true,
+    expires: session.refreshTokenValidUntil,
+  });
+  res.cookie('sessionId', session._id, {
+    httpOnly: true,
+    expires: session.refreshTokenValidUntil,
+  });
+};
 
 export const registerUserController = async (req, res) => {
   const { body } = req;
@@ -17,18 +33,28 @@ export const loginUserController = async (req, res) => {
   const { body } = req;
 
   const session = await loginUser(body);
-  res.cookie('sessionToken', session.refreshToken, {
-    httpOnly: true,
-    expires: session.refreshTokenValidUntil,
-  });
-  res.cookie('sessionId', session._id, {
-    httpOnly: true,
-    expires: session.refreshTokenValidUntil,
-  });
+  setupSessionCookies(session, res);
 
   res.json({
     status: 200,
     message: 'Successfully logged in a user!',
+    data: {
+      accessToken: session.accessToken,
+    },
+  });
+};
+
+export const refreshSessionController = async (req, res) => {
+  const session = await refreshSession({
+    sessionId: req.cookies.sessionId,
+    sessionToken: req.cookies.sessionToken,
+  });
+
+  setupSessionCookies(session, res);
+
+  res.json({
+    status: 200,
+    message: 'Successfully refreshed a session!',
     data: {
       accessToken: session.accessToken,
     },

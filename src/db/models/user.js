@@ -1,4 +1,5 @@
 import { model, Schema } from 'mongoose';
+import { ROLES } from '../../constants/roles.js';
 
 const userSchema = new Schema(
   {
@@ -6,6 +7,12 @@ const userSchema = new Schema(
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
     avatarUrl: { type: String, required: false },
+    role: {
+      type: String,
+      required: true,
+      enum: Object.values(ROLES),
+      default: 'parent',
+    },
   },
   { timestamps: true, versionKey: false },
 );
