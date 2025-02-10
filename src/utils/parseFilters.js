@@ -8,7 +8,7 @@ const parseGender = (string) => {
   if (Object.values(GENDERS).includes(string)) return string;
 };
 
-export const parseFilters = (filter) => {
+export const parseFilters = (filter = {}) => {
   return {
     minAge: parseNumber(filter.minAge),
     maxAge: parseNumber(filter.maxAge),
