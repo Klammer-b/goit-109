@@ -56,8 +56,13 @@ export const createStudentController = async (req, res) => {
 export const patchStudentController = async (req, res) => {
   const { studentId } = req.params;
   const { body } = req;
+  const photo = req.file;
 
-  const { student } = await upsertStudent(studentId, body, { upsert: false });
+  const { student } = await upsertStudent(
+    studentId,
+    { ...body, photo },
+    { upsert: false },
+  );
 
   res.json({
     status: 200,
