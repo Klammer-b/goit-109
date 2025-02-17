@@ -3,7 +3,7 @@ import Handlebars from 'handlebars';
 import fs from 'node:fs';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-import crypto from 'node:crypto';
+import crypto, { randomBytes } from 'node:crypto';
 import { UserCollection } from '../db/models/user.js';
 import { SessionCollection } from '../db/models/session.js';
 import {
@@ -15,6 +15,7 @@ import { getEnv } from '../utils/getEnv.js';
 import { ENV_VARS } from '../constants/env.js';
 import path from 'node:path';
 import { TEMPLATES_DIR_PATH } from '../constants/path.js';
+import { oAuth2Client, verifyGoogleOAuthCode } from '../utils/googleOAuth.js';
 
 const resetEmailTemplate = fs
   .readFileSync(path.join(TEMPLATES_DIR_PATH, 'reset-password-email.html'))
@@ -153,4 +154,37 @@ export const resetPassword = async ({ password, token }) => {
   await UserCollection.findByIdAndUpdate(user._id, {
     password: hashedPassword,
   });
+};
+
+export const getGoogleOauthUrl = () =>
+  oAuth2Client.generateAuthUrl({
+    access_type: 'offline',
+    scope: [
+      'https://www.googleapis.com/auth/userinfo.profile',
+      'https://www.googleapis.com/auth/userinfo.email',
+    ],
+  });
+
+export const signupOrLoginWithGoogle = async (code) => {
+  const ticket = await verifyGoogleOAuthCode(code);
+
+  let user = await UserCollection.findOne({ email: ticket.email });
+
+  if (!user) {
+    user = await UserCollection.create({
+      name: ticket.name,
+      email: ticket.email,
+      password: await bcrypt.hash(randomBytes(20).toString('base64'), 10),
+      avatarUrl: ticket.picture,
+    });
+  }
+
+  await SessionCollection.deleteOne({ userId: user._id });
+
+  const session = await SessionCollection.create({
+    ...createSession(),
+    userId: user._id,
+  });
+
+  return session;
 };
