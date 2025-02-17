@@ -3,6 +3,8 @@ import {
   logoutUser,
   refreshSession,
   registerUser,
+  requestResetPasswordEmail,
+  resetPassword,
 } from '../services/auth.js';
 import { serializeUser } from '../utils/serializeUser.js';
 
@@ -70,4 +72,25 @@ export const logoutUserController = async (req, res) => {
   res.clearCookie('sessionId');
 
   res.status(204).send();
+};
+
+export const requestResetPasswordEmailController = async (req, res) => {
+  const { email } = req.body;
+
+  await requestResetPasswordEmail(email);
+
+  res.json({
+    status: 200,
+    message: 'Successfully sent reset password link!',
+    data: {},
+  });
+};
+export const resetPasswordController = async (req, res) => {
+  await resetPassword(req.body);
+
+  res.json({
+    status: 200,
+    message: 'Successfully reset password!',
+    data: {},
+  });
 };

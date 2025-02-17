@@ -6,6 +6,7 @@ import { getEnv } from './utils/getEnv.js';
 import { ENV_VARS } from './constants/env.js';
 import router from './routes/index.js';
 import { errorHandlerMiddleware } from './middlewares/errorHandler.js';
+import { UPLOADS_DIR_PATH } from './constants/path.js';
 
 export const startServer = () => {
   const app = express();
@@ -26,6 +27,8 @@ export const startServer = () => {
       },
     }),
   );
+
+  app.use('/uploads', express.static(UPLOADS_DIR_PATH));
 
   app.use(router);
 

@@ -1,6 +1,7 @@
 import createHttpError from 'http-errors';
 import { StudentCollection } from '../db/models/students.js';
 import { processStudentPayload } from '../utils/processPayload.js';
+import { saveFile } from '../utils/saveFile.js';
 
 const createPaginationMetadata = (page, perPage, count) => {
   const totalPages = Math.ceil(count / perPage);
@@ -92,10 +93,22 @@ export const createStudent = async (payload) => {
   return student;
 };
 
-export const upsertStudent = async (studentId, payload, options = {}) => {
+export const upsertStudent = async (
+  studentId,
+  { photo, ...payload },
+  options = {},
+) => {
+  let photoUrl;
+  if (photo) {
+    photoUrl = await saveFile(photo);
+  }
+
   const response = await StudentCollection.findByIdAndUpdate(
     studentId,
-    processStudentPayload(payload),
+    processStudentPayload({
+      ...payload,
+      ...(photoUrl ? { photoUrl } : {}),
+    }),
     { ...options, new: true, includeResultMetadata: true },
   );
 

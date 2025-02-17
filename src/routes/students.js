@@ -15,6 +15,7 @@ import { validateMongoId } from '../middlewares/validateMongoId.js';
 import { authenticate } from '../middlewares/authenticate.js';
 import { checkRoles } from '../middlewares/checkRoles.js';
 import { ROLES } from '../constants/roles.js';
+import { upload } from '../middlewares/multer.js';
 
 const studentsRouter = Router();
 
@@ -44,6 +45,7 @@ studentsRouter.post(
 studentsRouter.patch(
   '/:studentId',
   checkRoles(ROLES.PARENT),
+  upload.single('photo'),
   validateBody(updateStudentValidationSchema),
   ctrlWrapper(patchStudentController),
 );
