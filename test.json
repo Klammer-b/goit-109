@@ -1,0 +1,8 @@
+{
+  "student": {
+    "name": "John",
+    "age": 10,
+    "avgMark": 10,
+    "subject": ["Math", "Music", "Geography"]
+  }
+}

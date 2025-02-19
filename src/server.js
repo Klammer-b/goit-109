@@ -7,6 +7,7 @@ import { ENV_VARS } from './constants/env.js';
 import router from './routes/index.js';
 import { errorHandlerMiddleware } from './middlewares/errorHandler.js';
 import { UPLOADS_DIR_PATH } from './constants/path.js';
+import { swaggerDoc } from './middlewares/swagger.js';
 
 export const startServer = () => {
   const app = express();
@@ -27,6 +28,8 @@ export const startServer = () => {
       },
     }),
   );
+
+  app.use('/api-docs', swaggerDoc());
 
   app.use('/uploads', express.static(UPLOADS_DIR_PATH));
 
