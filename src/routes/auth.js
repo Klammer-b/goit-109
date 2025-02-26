@@ -1,11 +1,13 @@
 import { Router } from 'express';
 import {
+  getGoogleOAuthUrlController,
   loginUserController,
   logoutUserController,
   refreshSessionController,
   registerUserController,
   requestResetPasswordEmailController,
   resetPasswordController,
+  verifyGoogleOAuthCodeController,
 } from '../controllers/auth.js';
 import { ctrlWrapper } from '../utils/ctrlWrapper.js';
 import { registerUserValidationSchema } from '../validation/registerUserValidationSchema.js';
@@ -13,6 +15,7 @@ import { validateBody } from '../middlewares/validateBody.js';
 import { loginUserValidationSchema } from '../validation/loginUserValidationSchema.js';
 import { requestResetPasswordValidationSchema } from '../validation/requestResetPasswordEmailValidationSchema.js';
 import { resetPasswordValidationSchema } from '../validation/resetPasswordValidationSchema.js';
+import { verifyGoogleOAuthCodeValidationSchema } from '../validation/verifyGoogleOAuthCodeValidationSchema.js';
 
 const authRouter = Router();
 
@@ -38,6 +41,16 @@ authRouter.post(
   '/reset-password',
   validateBody(resetPasswordValidationSchema),
   ctrlWrapper(resetPasswordController),
+);
+
+authRouter.post(
+  '/get-google-oauth-url',
+  ctrlWrapper(getGoogleOAuthUrlController),
+);
+authRouter.post(
+  '/verify-google-oauth-code',
+  validateBody(verifyGoogleOAuthCodeValidationSchema),
+  ctrlWrapper(verifyGoogleOAuthCodeController),
 );
 
 export default authRouter;

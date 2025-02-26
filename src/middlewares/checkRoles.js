@@ -24,6 +24,10 @@ export const checkRoles =
 
         const student = await StudentCollection.findOne({ _id: studentId });
 
+        if (!student) {
+          return next(createHttpError(404, 'Student not found'));
+        }
+
         if (req.user._id.equals(student.parentId)) {
           return next();
         }
